@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function Header(props) {
   return (
     <header>
@@ -56,24 +58,34 @@ function Article(props) {
   );
 }
 function App() {
+  const [mode, setMode] = useState("WELCOME");
+  const [id, setId] = useState(null);
   const topics = [
     { id: 1, title: "html", body: "html is..." },
     { id: 2, title: "css", body: "css is..." },
     { id: 3, title: "javascript", body: "javascript is..." },
   ];
+  let content = null;
+  if (mode === "WELCOME") {
+    content = <Article title="Welcome" body="Hello,web"></Article>;
+  } else if (mode === "READ") {
+    content = <Article title="READ" body="Hello,READ"></Article>;
+  }
   return (
     <div>
       <Header
         title="REACT"
         onChangeMode={() => {
           //onChangeMode라는 props을 갖는다
-          alert("Header");
+          setMode("WELCOME");
         }}
       ></Header>
       <Nav
         topics={topics}
-        onChangeMode={(id) => {
-          alert(id);
+        onChangeMode={(_id) => {
+          //여기서 받아오는 id값은 마음대로 정해도 되는가???
+          setMode("READ");
+          setId(_id);
         }}
       ></Nav>
       {/* "문자열 그대로 전달" {변수 전달} */}
