@@ -19,7 +19,7 @@ function Header(props) {
   );
 }
 function Nav(props) {
-  const lis = [];
+  const lis = []
   for (let i = 0; i < props.topics.length; i++) {
     let t = props.topics[i];
     lis.push(
@@ -31,9 +31,9 @@ function Nav(props) {
             // 파라미터가 1개일때는 괄호 생략가능
             // id={t.id}가 onChangeMode가 필요한 id를 넣어주는 것
             event.preventDefault();
-            props.onChangeMode(event.target.id);
-            //함수안에서 a 태그의 id를 받음
+            props.onChangeMode(Number(event.target.id));//여기서 id값은 문자열이라서 숫자로 바꿔줘야함
             //event.target =>event를 유발시킨 것(여기서는 a태그)
+            //e target에서 id를 받음=>숫자로 받았지만 태그의 속성으로 넘기면 id값이 문자가 된다
           }}
         >
           {t.title}
@@ -45,10 +45,13 @@ function Nav(props) {
 
   return (
     <nav>
-      <ol></ol>
+      <ol>
+        {lis}
+      </ol>
     </nav>
   );
 }
+
 function Article(props) {
   return (
     <article>
@@ -57,24 +60,66 @@ function Article(props) {
     </article>
   );
 }
+
+function Create(props) {
+  return (
+    <article>
+      <h2>Create</h2>
+      <form onSubmit={event => {
+        event.preventDefault();
+        const title = event.target.title.value;
+        const body = event.target.body.value;
+        props.onCreate(title, body);
+      }}>
+        <p>
+          <input type="text" name="title" placeholder="title" />
+        </p>
+        <p>
+          <textarea name="body" placeholder="body"></textarea>
+        </p>
+        {/* p태그로 감싸주면 가로정렬이 세로정렬로 변경됨 */}
+        <p><input type="submit" value="Create"></input></p>
+      </form>
+    </article>
+  );
+}
+
 function App() {
   const [mode, setMode] = useState("WELCOME");
   const [id, setId] = useState(null);
-  const topics = [
+  const [nextId, setNextId] = useState(4);
+  const [topics, setTopics] = useState([
     { id: 1, title: "html", body: "html is..." },
     { id: 2, title: "css", body: "css is..." },
     { id: 3, title: "javascript", body: "javascript is..." },
-  ];
+  ]);
   let content = null;
   if (mode === "WELCOME") {
     content = <Article title="Welcome" body="Hello,web"></Article>;
   } else if (mode === "READ") {
-    content = <Article title="READ" body="Hello,READ"></Article>;
+    let title, body = null;
+    for (let i = 0; i < topics.length; i++){
+      if (topics[i].id === id) {
+        title = topics[i].title;
+        body = topics[i].body;
+      }
+    }
+    content = <Article title={title} body={body}></Article>;
+  } else if (mode === 'CREATE') {
+    content = <Create onCreate={(_title,_body) => {
+      const newTopic = { id: nextId, title: _title, body: _body }
+      const newTopics = [...topics]
+      newTopics.push(newTopic);
+      setTopics(newTopics);
+      setMode('READ');
+      setId(nextId);
+      setNextId(nextId + 1);
+    }}></Create>
   }
   return (
     <div>
       <Header
-        title="REACT"
+        title="WEB"
         onChangeMode={() => {
           //onChangeMode라는 props을 갖는다
           setMode("WELCOME");
@@ -89,8 +134,16 @@ function App() {
         }}
       ></Nav>
       {/* "문자열 그대로 전달" {변수 전달} */}
-      <Article title="Welcome" body="Hello,WeB"></Article>
-      <Article title="HI" body="REACT"></Article>
+      {content}
+      <a
+        href="/create"
+        onClick={(event) => {
+          event.preventDefault();
+          setMode("CREATE");
+        }}
+      >
+        Create
+      </a>
     </div>
   );
 }
