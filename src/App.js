@@ -19,7 +19,7 @@ function Header(props) {
   );
 }
 function Nav(props) {
-  const lis = []
+  const lis = [];
   for (let i = 0; i < props.topics.length; i++) {
     let t = props.topics[i];
     lis.push(
@@ -31,7 +31,7 @@ function Nav(props) {
             // 파라미터가 1개일때는 괄호 생략가능
             // id={t.id}가 onChangeMode가 필요한 id를 넣어주는 것
             event.preventDefault();
-            props.onChangeMode(Number(event.target.id));//여기서 id값은 문자열이라서 숫자로 바꿔줘야함
+            props.onChangeMode(Number(event.target.id)); //여기서 id값은 문자열이라서 숫자로 바꿔줘야함
             //event.target =>event를 유발시킨 것(여기서는 a태그)
             //e target에서 id를 받음=>숫자로 받았지만 태그의 속성으로 넘기면 id값이 문자가 된다
           }}
@@ -45,9 +45,7 @@ function Nav(props) {
 
   return (
     <nav>
-      <ol>
-        {lis}
-      </ol>
+      <ol>{lis}</ol>
     </nav>
   );
 }
@@ -65,12 +63,14 @@ function Create(props) {
   return (
     <article>
       <h2>Create</h2>
-      <form onSubmit={event => {
-        event.preventDefault();
-        const title = event.target.title.value;
-        const body = event.target.body.value;
-        props.onCreate(title, body);
-      }}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const title = event.target.title.value;
+          const body = event.target.body.value;
+          props.onCreate(title, body);
+        }}
+      >
         <p>
           <input type="text" name="title" placeholder="title" />
         </p>
@@ -78,7 +78,9 @@ function Create(props) {
           <textarea name="body" placeholder="body"></textarea>
         </p>
         {/* p태그로 감싸주면 가로정렬이 세로정렬로 변경됨 */}
-        <p><input type="submit" value="Create"></input></p>
+        <p>
+          <input type="submit" value="Create"></input>
+        </p>
       </form>
     </article>
   );
@@ -86,23 +88,44 @@ function Create(props) {
 function Update(props) {
   const [title, setTitle] = useState(props.title);
   const [body, setBody] = useState(props.body);
-  return <article>
-    <h2>Update</h2>
-    <form onSubmit={event => {
-      event.preventDefault();
-      const title = event.target.title.value;
-      const body = event.target.body.value;
-      props.onUpdate(title, body);
-    }}>
-      <p><input type="text" name="title" placeholder="title" value={title} onChange={event => {
-        setTitle(event.target.value);
-      }} /></p>
-      <p><textarea name="body" placeholder="body" value={body} onChange={event => {
-        setBody(event.target.value);
-      }}></textarea></p>
-      <p><input type="submit" value="Update"></input></p>
-    </form>
-  </article>
+  return (
+    <article>
+      <h2>Update</h2>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          const title = event.target.title.value;
+          const body = event.target.body.value;
+          props.onUpdate(title, body);
+        }}
+      >
+        <p>
+          <input
+            type="text"
+            name="title"
+            placeholder="title"
+            value={title}
+            onChange={(event) => {
+              setTitle(event.target.value);
+            }}
+          />
+        </p>
+        <p>
+          <textarea
+            name="body"
+            placeholder="body"
+            value={body}
+            onChange={(event) => {
+              setBody(event.target.value);
+            }}
+          ></textarea>
+        </p>
+        <p>
+          <input type="submit" value="Update"></input>
+        </p>
+      </form>
+    </article>
+  );
 }
 
 function App() {
@@ -119,48 +142,87 @@ function App() {
   if (mode === "WELCOME") {
     content = <Article title="Welcome" body="Hello,web"></Article>;
   } else if (mode === "READ") {
-    let title, body = null;
-    for (let i = 0; i < topics.length; i++){
+    let title,
+      body = null;
+    for (let i = 0; i < topics.length; i++) {
       if (topics[i].id === id) {
         title = topics[i].title;
         body = topics[i].body;
       }
     }
     content = <Article title={title} body={body}></Article>;
-    contextControl = <li><a href={"/update/" + id} onClick={event => {
-      event.preventDefault();
-      setMode('UPDATE');
-    }}>Update</a></li>
-  } else if (mode === 'CREATE') {
-    content = <Create onCreate={(_title,_body) => {
-      const newTopic = { id: nextId, title: _title, body: _body }
-      const newTopics = [...topics]
-      newTopics.push(newTopic);
-      setTopics(newTopics);
-      setMode('READ');
-      setId(nextId);
-      setNextId(nextId + 1);
-    }}></Create>
+    contextControl = (
+      <>
+        <li>
+          <a
+            href={"/update/" + id}
+            onClick={(event) => {
+              event.preventDefault();
+              setMode("UPDATE");
+            }}
+          >
+            Update
+          </a>
+        </li>
+        <li>
+          <input
+            type="button"
+            value="Delete"
+            onClick={() => {
+              const newTopics = [];
+              for (let i = 0; i < topics.length; i++) {
+                if (topics[i].id !== id) {
+                  newTopics.push(topics[i]);
+                }
+              }
+              setTopics(newTopics);
+              setMode("WELCOME")
+            }}
+          ></input>
+        </li>
+      </>
+    );
+  } else if (mode === "CREATE") {
+    content = (
+      <Create
+        onCreate={(_title, _body) => {
+          const newTopic = { id: nextId, title: _title, body: _body };
+          const newTopics = [...topics];
+          newTopics.push(newTopic);
+          setTopics(newTopics);
+          setMode("READ");
+          setId(nextId);
+          setNextId(nextId + 1);
+        }}
+      ></Create>
+    );
   } else if (mode === "UPDATE") {
-    let title, body = null;
-    for (let i = 0; i < topics.length; i++){
+    let title,
+      body = null;
+    for (let i = 0; i < topics.length; i++) {
       if (topics[i].id === id) {
         title = topics[i].title;
         body = topics[i].body;
       }
     }
-    content = <Update title={title} body={body} onUpdate={(title, body) => {
-      const newTopics = [...topics]
-      const updatedTopic = { id: id, title: title, body: body }
-      for (let i = 0; i > newTopics.length; i++){
-        if (newTopics[i].id === id) {
-          newTopics[i] = updatedTopic;
-          break;
-        }
-      }
-      setTopics(newTopics);
-      setMode("READ");
-    }}></Update>
+    content = (
+      <Update
+        title={title}
+        body={body}
+        onUpdate={(title, body) => {
+          const newTopics = [...topics];
+          const updatedTopic = { id: id, title: title, body: body };
+          for (let i = 0; i > newTopics.length; i++) {
+            if (newTopics[i].id === id) {
+              newTopics[i] = updatedTopic;
+              break;
+            }
+          }
+          setTopics(newTopics);
+          setMode("READ");
+        }}
+      ></Update>
+    );
   }
   return (
     <div>
